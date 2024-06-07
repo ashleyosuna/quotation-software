@@ -8,6 +8,9 @@ const LocalStrategy = require("passport-local").Strategy;
 const session = require("express-session");
 const User = require('./../models/User')
 const router = express.Router();
+const ensureAuthenticated = require('./../ensureAcess').ensureAuthenticated
+const ensureAdminAccess = require('./../ensureAcess').ensureAdminAccess
+const ensureManagerAccess = require('./../ensureAcess').ensureManagerAccess
 
 router.use(session({
     secret: "secret-key",
@@ -32,6 +35,7 @@ passport.deserializeUser(function (user, done) {
 })
 
 router.get("/login", (req, res) => {
+    console.log(req)
     res.status(200).send({message: "in login"});
 })
 
@@ -40,11 +44,11 @@ router.post("/login", passport.authenticate('local', {
     failureRedirect: "/login"
 }))
 
-router.get('/profile', (req, res) => {
+router.get('/profile', ensureAuthenticated, (req, res) => {
     res.send({message: 'success'})
 })
 
-router.post("/register", (req, res) => {
+router.post("/register", ensureAdminAccess, (req, res) => {
     console.log(req.body)
     User.register(new User({
         username: req.body.username,
@@ -59,8 +63,8 @@ router.post("/register", (req, res) => {
     })
 })
 
-const ensureAuthenticated = function () {};
-const ensureAdmin = function () {};
-const ensureManager = function () {};
+//const ensureAuthenticated = function () {};
+// const ensureAdmin = function () {};
+// const ensureManager = function () {};
 
 module.exports = router;
