@@ -7,19 +7,19 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const session = require("express-session");
 const User = require('./../models/User')
-const app = express();
+const router = express.Router();
 
-app.use(session({
+router.use(session({
     secret: "secret-key",
     resave: false,
     saveUninitialized: true,
 }))
 
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(express.json());
-app.use(cors());
-app.use(express.urlencoded({extended: false}));
+router.use(passport.initialize());
+router.use(passport.session());
+router.use(express.json());
+router.use(cors());
+router.use(express.urlencoded({extended: false}));
 
 passport.use(new LocalStrategy(User.authenticate()));
 
@@ -31,16 +31,24 @@ passport.deserializeUser(function (user, done) {
     done(null, user);
 })
 
-app.post("/login", passport.authenticate('local', {
+router.get("/login", (req, res) => {
+    res.status(200).send({message: "in login"});
+})
+
+router.post("/login", passport.authenticate('local', {
     successRedirect: "/profile",
     failureRedirect: "/login"
 }))
 
-app.post("/register", (req, res) => {
+router.get('/profile', (req, res) => {
+    res.send({message: 'success'})
+})
+
+router.post("/register", (req, res) => {
     console.log(req.body)
     User.register(new User({
         username: req.body.username,
-        email: req.body.role
+        role: req.body.role
     }), req.body.password, function (err, user) {
         if (err) {
             console.log(err);
@@ -54,3 +62,5 @@ app.post("/register", (req, res) => {
 const ensureAuthenticated = function () {};
 const ensureAdmin = function () {};
 const ensureManager = function () {};
+
+module.exports = router;
